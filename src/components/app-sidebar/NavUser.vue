@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router"
 import {
   BadgeCheck,
   Bell,
@@ -6,6 +7,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  User,
 } from "lucide-vue-next"
 
 import {
@@ -38,6 +40,7 @@ const props = defineProps<{
 }>()
 
 const { isMobile } = useSidebar()
+const router = useRouter()
 </script>
 
 <template>
@@ -84,22 +87,26 @@ const { isMobile } = useSidebar()
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem @click="router.push('/user/billing')">
               <Sparkles />
               Upgrade to Pro
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem @click="router.push('/user/profile')">
+              <User />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="router.push('/user/account')">
               <BadgeCheck />
               Account
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem @click="router.push('/user/billing')">
               <CreditCard />
               Billing
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem @click="router.push('/user/notifications')">
               <Bell />
               Notifications
             </DropdownMenuItem>

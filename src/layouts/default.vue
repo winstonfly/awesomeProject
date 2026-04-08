@@ -13,9 +13,11 @@ import AppSidebar from '@/components/app-sidebar/AppSidebar.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
 import { useAppConfig } from '@/composables/useAppConfig'
+import { useRouter } from 'vue-router'
 import { Search, Sun, Moon, Bell, User, LogOut, CreditCard, LifeBuoy, Settings } from 'lucide-vue-next'
 
 const { config, } = useAppConfig()
+const router = useRouter()
 const isDark = computed(() => config.value.theme === 'dark'
   || (config.value.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches))
 
@@ -83,17 +85,21 @@ const pageDescription = computed(() => route.meta.description)
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
+                <DropdownMenuItem @click="router.push('/user/profile')">
                   <User class="mr-2 size-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem @click="router.push('/user/account')">
+                  <Settings class="mr-2 size-4" />
+                  <span>Account</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="router.push('/user/billing')">
                   <CreditCard class="mr-2 size-4" />
                   <span>Billing</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings class="mr-2 size-4" />
-                  <span>Settings</span>
+                <DropdownMenuItem @click="router.push('/user/notifications')">
+                  <Bell class="mr-2 size-4" />
+                  <span>Notifications</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

@@ -14,7 +14,6 @@ import {
   Settings2,
   ShoppingCart,
   SquareTerminal,
-  Users,
 } from "lucide-vue-next"
 import NavMain from "@/components/app-sidebar/NavMain.vue"
 import NavProjects from "@/components/app-sidebar/NavProjects.vue"
@@ -80,21 +79,6 @@ const data = {
         },
         {
           title: "Products",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Users",
-      url: "#",
-      icon: Users,
-      items: [
-        {
-          title: "All Users",
-          url: "#",
-        },
-        {
-          title: "Roles",
           url: "#",
         },
       ],

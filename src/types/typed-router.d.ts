@@ -55,6 +55,34 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/user/account/': RouteRecordInfo<
+      '/user/account/',
+      '/user/account',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/user/billing/': RouteRecordInfo<
+      '/user/billing/',
+      '/user/billing',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/user/notifications/': RouteRecordInfo<
+      '/user/notifications/',
+      '/user/notifications',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/user/profile/': RouteRecordInfo<
+      '/user/profile/',
+      '/user/profile',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -89,6 +117,30 @@ declare module 'vue-router/auto-routes' {
     'src/pages/dashboard/index.vue': {
       routes:
         | '/dashboard/'
+      views:
+        | never
+    }
+    'src/pages/user/account/index.vue': {
+      routes:
+        | '/user/account/'
+      views:
+        | never
+    }
+    'src/pages/user/billing/index.vue': {
+      routes:
+        | '/user/billing/'
+      views:
+        | never
+    }
+    'src/pages/user/notifications/index.vue': {
+      routes:
+        | '/user/notifications/'
+      views:
+        | never
+    }
+    'src/pages/user/profile/index.vue': {
+      routes:
+        | '/user/profile/'
       views:
         | never
     }
