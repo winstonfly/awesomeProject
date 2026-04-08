@@ -20,6 +20,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+import AddWorkspaceDialog from "@/components/app-sidebar/AddWorkspaceDialog.vue"
+
 const props = defineProps<{
   teams: {
     name: string
@@ -30,6 +32,11 @@ const props = defineProps<{
 
 const { isMobile } = useSidebar()
 const activeTeam = ref(props.teams[0]!)
+const showAddDialog = ref(false)
+
+function openAddWorkspace() {
+  showAddDialog.value = true
+}
 </script>
 
 <template>
@@ -60,7 +67,7 @@ const activeTeam = ref(props.teams[0]!)
             :side-offset="4"
         >
           <DropdownMenuLabel class="text-xs text-muted-foreground">
-            Teams
+            Workspaces
           </DropdownMenuLabel>
           <DropdownMenuItem
               v-for="(team, index) in teams"
@@ -75,16 +82,18 @@ const activeTeam = ref(props.teams[0]!)
             <DropdownMenuShortcut>⌘{{ index + 1 }}</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem class="gap-2 p-2">
+          <DropdownMenuItem class="gap-2 p-2" @click="openAddWorkspace">
             <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
               <Plus class="size-4" />
             </div>
             <div class="font-medium text-muted-foreground">
-              Add team
+              Add Workspace
             </div>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
   </SidebarMenu>
+
+  <AddWorkspaceDialog v-model:open="showAddDialog" />
 </template>

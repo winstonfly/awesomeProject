@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CreditCard, Download, Zap, Check, ArrowUpRight } from 'lucide-vue-next'
+import { CreditCard, Download, Zap, Check, HardDrive, FolderOpen } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import UserSettingsNav from '@/components/UserSettingsNav.vue'
 
 definePage({
@@ -16,7 +15,7 @@ const plans = [
     id: 'free',
     name: 'Free',
     price: '$0',
-    period: '/ month',
+    period: '/mo',
     description: 'For individuals getting started.',
     features: ['Up to 5 projects', '1 GB storage', 'Basic analytics', 'Email support'],
   },
@@ -24,16 +23,15 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     price: '$12',
-    period: '/ month',
+    period: '/mo',
     description: 'For professionals and small teams.',
     features: ['Unlimited projects', '50 GB storage', 'Advanced analytics', 'Priority support', 'API access', 'Custom domains'],
-    badge: 'Current plan',
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
     price: '$49',
-    period: '/ month',
+    period: '/mo',
     description: 'For large teams and organizations.',
     features: ['Everything in Pro', '500 GB storage', 'Dedicated support', 'SSO / SAML', 'Audit logs', 'SLA guarantee'],
   },
@@ -52,163 +50,153 @@ const invoices = [
   <div class="flex flex-col">
     <UserSettingsNav />
 
-    <div class="mx-auto w-full max-w-3xl space-y-8 p-6">
+    <div class="mx-auto w-full max-w-3xl space-y-5 p-6">
 
-      <!-- Current Plan Summary -->
-      <section class="bg-card border-border rounded-xl border p-6">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <div class="mb-1 flex items-center gap-2">
-              <Zap class="text-primary size-4" />
-              <h2 class="text-base font-semibold">Current Plan</h2>
+      <!-- Current plan -->
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Zap class="size-4 text-primary" />
             </div>
-            <p class="text-muted-foreground text-sm">
-              You're on the <span class="text-foreground font-semibold">Pro</span> plan.
-              Your next billing date is <span class="text-foreground font-semibold">January 1, 2025</span>.
-            </p>
+            <div>
+              <h2 class="text-sm font-semibold">Current Plan</h2>
+              <p class="text-xs text-muted-foreground">
+                Next billing: <span class="text-foreground font-medium">Jan 1, 2025</span>
+              </p>
+            </div>
           </div>
-          <span class="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-semibold">Pro</span>
+          <span class="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">Pro</span>
         </div>
-
-        <Separator class="my-4" />
-
-        <!-- Usage bar -->
-        <div class="space-y-3">
-          <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Storage used</span>
-            <span class="font-medium">18.4 GB <span class="text-muted-foreground">/ 50 GB</span></span>
+        <div class="p-6 space-y-3">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="flex items-center gap-1.5 text-muted-foreground"><HardDrive class="size-3" /> Storage</span>
+              <span class="font-medium">18.4 GB <span class="text-muted-foreground font-normal">/ 50 GB</span></span>
+            </div>
+            <div class="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full" style="width:37%" />
+            </div>
           </div>
-          <div class="bg-muted h-2 overflow-hidden rounded-full">
-            <div class="bg-primary h-full rounded-full" style="width: 37%" />
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Projects</span>
-            <span class="font-medium">12 <span class="text-muted-foreground">/ Unlimited</span></span>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="flex items-center gap-1.5 text-muted-foreground"><FolderOpen class="size-3" /> Projects</span>
+              <span class="font-medium">12 <span class="text-muted-foreground font-normal">/ Unlimited</span></span>
+            </div>
+            <div class="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div class="h-full bg-primary/40 rounded-full" style="width:8%" />
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- Plans -->
-      <section>
-        <h2 class="mb-4 text-base font-semibold">Available Plans</h2>
-        <div class="grid gap-4 md:grid-cols-3">
+      <div>
+        <h3 class="text-sm font-semibold mb-3 px-0.5">Available Plans</h3>
+        <div class="grid gap-3 sm:grid-cols-3">
           <div
-            v-for="plan in plans"
-            :key="plan.id"
-            class="bg-card border-border relative flex flex-col rounded-xl border p-5 transition-shadow"
-            :class="plan.id === 'pro' ? 'ring-primary ring-2' : ''"
+            v-for="plan in plans" :key="plan.id"
+            class="relative flex flex-col bg-card border rounded-xl p-5 transition-all"
+            :class="plan.id === currentPlan
+              ? 'border-primary ring-1 ring-primary/20 shadow-sm shadow-primary/10'
+              : 'border-border hover:border-muted-foreground/30'"
           >
-            <div v-if="plan.badge"
-              class="bg-primary text-primary-foreground absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-xs font-semibold whitespace-nowrap">
-              {{ plan.badge }}
+            <div v-if="plan.id === currentPlan"
+              class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">
+              Current plan
             </div>
-
-            <div class="mb-3">
-              <p class="text-sm font-semibold">{{ plan.name }}</p>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span class="text-2xl font-bold">{{ plan.price }}</span>
-                <span class="text-muted-foreground text-sm">{{ plan.period }}</span>
+            <div class="mb-4">
+              <p class="text-sm font-bold">{{ plan.name }}</p>
+              <div class="flex items-baseline gap-1 mt-1">
+                <span class="text-2xl font-black tracking-tight">{{ plan.price }}</span>
+                <span class="text-xs text-muted-foreground">{{ plan.period }}</span>
               </div>
-              <p class="text-muted-foreground mt-1 text-xs">{{ plan.description }}</p>
+              <p class="text-xs text-muted-foreground mt-1">{{ plan.description }}</p>
             </div>
-
-            <ul class="mb-5 flex-1 space-y-2">
-              <li v-for="f in plan.features" :key="f" class="flex items-center gap-2 text-sm">
-                <Check class="text-primary size-3.5 shrink-0" />
-                {{ f }}
+            <ul class="flex-1 space-y-2 mb-5">
+              <li v-for="f in plan.features" :key="f" class="flex items-start gap-2 text-xs">
+                <Check class="size-3.5 text-primary shrink-0 mt-0.5" />
+                <span class="text-muted-foreground">{{ f }}</span>
               </li>
             </ul>
-
-            <Button
-              :variant="plan.id === currentPlan ? 'outline' : plan.id === 'enterprise' ? 'default' : 'default'"
-              size="sm"
-              :disabled="plan.id === currentPlan"
-              class="w-full"
-            >
+            <Button :variant="plan.id === currentPlan ? 'outline' : 'default'" size="sm" :disabled="plan.id === currentPlan" class="w-full">
               {{ plan.id === currentPlan ? 'Current plan' : plan.id === 'free' ? 'Downgrade' : 'Upgrade' }}
             </Button>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Payment Method -->
-      <section class="bg-card border-border rounded-xl border p-6">
-        <div class="mb-5 flex items-center justify-between">
+      <!-- Payment method -->
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h2 class="text-base font-semibold">Payment Method</h2>
-            <p class="text-muted-foreground text-sm">Update your billing details and card information.</p>
+            <h2 class="text-sm font-semibold">Payment Method</h2>
+            <p class="text-xs text-muted-foreground mt-0.5">Your default billing card.</p>
           </div>
           <Button variant="outline" size="sm">Update card</Button>
         </div>
-
-        <div class="border-border bg-muted/30 flex items-center gap-4 rounded-xl border p-4">
-          <div class="bg-background border-border flex size-12 items-center justify-center rounded-lg border">
-            <CreditCard class="text-muted-foreground size-5" />
+        <div class="p-6">
+          <div class="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border">
+            <div class="size-11 bg-background border border-border rounded-lg flex items-center justify-center shrink-0">
+              <CreditCard class="size-5 text-muted-foreground" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium">Visa ending in 4242</p>
+              <p class="text-xs text-muted-foreground">Expires 08/2026 · admin@example.com</p>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shrink-0">
+              Default
+            </span>
           </div>
-          <div>
-            <p class="text-sm font-medium">Visa ending in 4242</p>
-            <p class="text-muted-foreground text-xs">Expires 08 / 2026 · Billing to admin@example.com</p>
-          </div>
-          <span class="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-            Default
-          </span>
         </div>
-      </section>
+      </div>
 
-      <!-- Invoice History -->
-      <section class="bg-card border-border rounded-xl border">
-        <div class="border-border flex items-center justify-between border-b px-6 py-4">
+      <!-- Invoice history -->
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h2 class="text-base font-semibold">Billing History</h2>
-            <p class="text-muted-foreground text-sm">Download past invoices.</p>
+            <h2 class="text-sm font-semibold">Billing History</h2>
+            <p class="text-xs text-muted-foreground mt-0.5">View and download past invoices.</p>
           </div>
-          <Button variant="outline" size="sm" class="gap-1.5">
-            <Download class="size-3.5" />
-            Export all
+          <Button variant="ghost" size="sm" class="gap-1.5 text-xs text-muted-foreground">
+            <Download class="size-3.5" /> Export all
           </Button>
         </div>
-
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-border border-b">
-              <th class="text-muted-foreground px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Invoice</th>
-              <th class="text-muted-foreground px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-              <th class="text-muted-foreground px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
-              <th class="text-muted-foreground px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3" />
+            <tr class="border-b border-border bg-muted/20">
+              <th class="px-6 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Invoice</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Date</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Amount</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Status</th>
+              <th class="px-6 py-2.5 w-14" />
             </tr>
           </thead>
-          <tbody>
-            <tr
-              v-for="inv in invoices"
-              :key="inv.id"
-              class="border-border hover:bg-muted/30 border-b transition-colors last:border-0"
-            >
-              <td class="px-6 py-3 font-medium">{{ inv.id }}</td>
-              <td class="text-muted-foreground px-4 py-3">{{ inv.date }}</td>
-              <td class="px-4 py-3 font-medium">{{ inv.amount }}</td>
-              <td class="px-4 py-3">
-                <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <tbody class="divide-y divide-border">
+            <tr v-for="inv in invoices" :key="inv.id" class="hover:bg-muted/20 transition-colors">
+              <td class="px-6 py-3.5 font-mono text-xs font-medium">{{ inv.id }}</td>
+              <td class="px-4 py-3.5 text-xs text-muted-foreground">{{ inv.date }}</td>
+              <td class="px-4 py-3.5 text-sm font-semibold">{{ inv.amount }}</td>
+              <td class="px-4 py-3.5">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
                   {{ inv.status }}
                 </span>
               </td>
-              <td class="px-6 py-3 text-right">
-                <button class="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors ml-auto">
-                  <Download class="size-3" />
-                  PDF
+              <td class="px-6 py-3.5">
+                <button class="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <Download class="size-3" /> PDF
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-      </section>
+      </div>
 
-      <!-- Cancel Plan -->
-      <div class="text-center">
-        <button class="text-muted-foreground hover:text-destructive text-sm underline-offset-4 transition-colors hover:underline">
+      <p class="text-center">
+        <button class="text-xs text-muted-foreground/50 hover:text-destructive transition-colors hover:underline underline-offset-4">
           Cancel subscription
         </button>
-      </div>
+      </p>
 
     </div>
   </div>

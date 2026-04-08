@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { Separator } from '@/components/ui/separator'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup,
@@ -130,4 +131,5 @@ const pageDescription = computed(() => route.meta.description)
       </main>
     </SidebarInset>
   </SidebarProvider>
+  <ConfirmDialog />
 </template>

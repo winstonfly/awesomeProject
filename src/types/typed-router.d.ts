@@ -55,6 +55,69 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/manage/members/': RouteRecordInfo<
+      '/manage/members/',
+      '/manage/members',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/monitor/': RouteRecordInfo<
+      '/manage/monitor/',
+      '/manage/monitor',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/nodes/': RouteRecordInfo<
+      '/manage/nodes/',
+      '/manage/nodes',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/peers/': RouteRecordInfo<
+      '/manage/peers/',
+      '/manage/peers',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/policies/': RouteRecordInfo<
+      '/manage/policies/',
+      '/manage/policies',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/stepper/': RouteRecordInfo<
+      '/manage/stepper/',
+      '/manage/stepper',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/tokens/': RouteRecordInfo<
+      '/manage/tokens/',
+      '/manage/tokens',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/topology/': RouteRecordInfo<
+      '/manage/topology/',
+      '/manage/topology',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/manage/workspaces/': RouteRecordInfo<
+      '/manage/workspaces/',
+      '/manage/workspaces',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/user/account/': RouteRecordInfo<
       '/user/account/',
       '/user/account',
@@ -117,6 +180,60 @@ declare module 'vue-router/auto-routes' {
     'src/pages/dashboard/index.vue': {
       routes:
         | '/dashboard/'
+      views:
+        | never
+    }
+    'src/pages/manage/members/index.vue': {
+      routes:
+        | '/manage/members/'
+      views:
+        | never
+    }
+    'src/pages/manage/monitor/index.vue': {
+      routes:
+        | '/manage/monitor/'
+      views:
+        | never
+    }
+    'src/pages/manage/nodes/index.vue': {
+      routes:
+        | '/manage/nodes/'
+      views:
+        | never
+    }
+    'src/pages/manage/peers/index.vue': {
+      routes:
+        | '/manage/peers/'
+      views:
+        | never
+    }
+    'src/pages/manage/policies/index.vue': {
+      routes:
+        | '/manage/policies/'
+      views:
+        | never
+    }
+    'src/pages/manage/stepper/index.vue': {
+      routes:
+        | '/manage/stepper/'
+      views:
+        | never
+    }
+    'src/pages/manage/tokens/index.vue': {
+      routes:
+        | '/manage/tokens/'
+      views:
+        | never
+    }
+    'src/pages/manage/topology/index.vue': {
+      routes:
+        | '/manage/topology/'
+      views:
+        | never
+    }
+    'src/pages/manage/workspaces/index.vue': {
+      routes:
+        | '/manage/workspaces/'
       views:
         | never
     }

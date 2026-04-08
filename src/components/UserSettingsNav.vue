@@ -16,19 +16,23 @@ const active = computed(() => route.path)
 </script>
 
 <template>
-  <div class="border-border border-b bg-card">
-    <nav class="flex gap-0 px-6 overflow-x-auto">
+  <div class="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-20">
+    <nav class="flex gap-0 px-6 overflow-x-auto scrollbar-none">
       <RouterLink
         v-for="tab in tabs"
         :key="tab.path"
         :to="tab.path"
-        class="flex items-center gap-2 border-b-2 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-colors"
+        class="relative flex items-center gap-2 px-4 py-3.5 text-sm font-medium whitespace-nowrap transition-colors"
         :class="active === tab.path
-          ? 'border-primary text-primary'
-          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'"
+          ? 'text-foreground'
+          : 'text-muted-foreground hover:text-foreground'"
       >
-        <component :is="tab.icon" class="size-4" />
+        <component :is="tab.icon" class="size-3.5" />
         {{ tab.label }}
+        <span
+          v-if="active === tab.path"
+          class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+        />
       </RouterLink>
     </nav>
   </div>

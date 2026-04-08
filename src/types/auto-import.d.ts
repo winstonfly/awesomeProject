@@ -11,6 +11,7 @@ declare global {
   const FONT_OPTIONS: typeof import('../composables/useAppConfig').FONT_OPTIONS
   const RADIUS_OPTIONS: typeof import('../composables/useAppConfig').RADIUS_OPTIONS
   const computed: typeof import('vue').computed
+  const confirmState: typeof import('../composables/useConfirm').confirmState
   const createApp: typeof import('vue').createApp
   const customRef: typeof import('vue').customRef
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
@@ -59,18 +60,32 @@ declare global {
   const toValue: typeof import('vue').toValue
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
+  const useAction: typeof import('../composables/useApi').useAction
   const useAppConfig: typeof import('../composables/useAppConfig').useAppConfig
   const useAttrs: typeof import('vue').useAttrs
+  const useConfirm: typeof import('../composables/useConfirm').useConfirm
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
   const useId: typeof import('vue').useId
   const useModel: typeof import('vue').useModel
+  const useMonitorStore: typeof import('../stores/monitor').useMonitorStore
+  const useNavbarStore: typeof import('../stores/pages/topNavbar').useNavbarStore
+  const usePeerPageStore: typeof import('../stores/peerPage').usePeerPageStore
+  const usePolicyPageStore: typeof import('../stores/usePolicyPageStore').usePolicyPageStore
   const useRoute: typeof import('vue-router').useRoute
   const useRouter: typeof import('vue-router').useRouter
   const useSlots: typeof import('vue').useSlots
   const useSystemTheme: typeof import('../composables/use-system-theme').useSystemTheme
+  const useTable: typeof import('../composables/useApi').useTable
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTheme: typeof import('../composables/useTheme').useTheme
+  const useThemeStore: typeof import('../stores/useTheme').useThemeStore
+  const useTopologyStore: typeof import('../stores/topology').useTopologyStore
+  const useUserDashboardStore: typeof import('../stores/useDashboard').useUserDashboardStore
+  const useUserSettingsStore: typeof import('../stores/pages/userSettings').useUserSettingsStore
+  const useUserStore: typeof import('../stores/user').useUserStore
+  const useWorkspacePageStore: typeof import('../stores/workspacePage').useWorkspacePageStore
+  const useWorkspaceStore: typeof import('../stores/workspace').useWorkspaceStore
   const watch: typeof import('vue').watch
   const watchEffect: typeof import('vue').watchEffect
   const watchPostEffect: typeof import('vue').watchPostEffect
@@ -84,4 +99,10 @@ declare global {
   // @ts-ignore
   export type { Theme, ColorScheme, RadiusValue, FontFamily, AppConfig } from '../composables/useAppConfig'
   import('../composables/useAppConfig')
+  // @ts-ignore
+  export type { MetricCard, TopoNode, TopoLink, WorkspaceCard, NetworkEvent } from '../stores/useDashboard'
+  import('../stores/useDashboard')
+  // @ts-ignore
+  export type { User } from '../stores/user'
+  import('../stores/user')
 }

@@ -14,6 +14,12 @@ import {
   Settings2,
   ShoppingCart,
   SquareTerminal,
+  Server,
+  KeyRound,
+  Layers,
+  Activity,
+  Users,
+  GitFork,
 } from "lucide-vue-next"
 import NavMain from "@/components/app-sidebar/NavMain.vue"
 import NavProjects from "@/components/app-sidebar/NavProjects.vue"
@@ -41,7 +47,7 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "北京测试空间",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
@@ -58,66 +64,41 @@ const data = {
   ],
   navMain: [
     {
+      title: "Steps",
+      url: "/manage/stepper",
+      items: [],
+    },
+    {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
       items: [],
     },
     {
-      title: "Ecommerce",
+      title: "Management",
       url: "#",
-      icon: ShoppingCart,
+      icon: Server,
       isActive: true,
       items: [
         {
-          title: "Customers",
-          url: "/apps/ecommerce/customers",
+          title: "Users",
+          url: "/manage/users",
         },
         {
-          title: "Orders",
-          url: "#",
+          title: "topology",
+          url: "/manage/topology",
         },
         {
-          title: "Products",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Overview",
-          url: "#",
+          title: "Nodes",
+          url: "/manage/nodes",
         },
         {
-          title: "Reports",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
+          title: "Workspaces",
+          url: "/manage/workspaces",
         },
         {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Peering",
+          url: "/manage/peers",
         },
       ],
     },
@@ -145,23 +126,6 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
 }
 </script>
 
@@ -172,7 +136,8 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
+<!--      <NavMain label="网络管理" :items="data.navNetwork" />-->
+<!--      <NavProjects :projects="data.projects" />-->
     </SidebarContent>
     <SidebarFooter>
       <NavUser :user="data.user" />

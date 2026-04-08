@@ -3,57 +3,33 @@ import { computed } from 'vue'
 
 definePage({
   meta: {
-    title: 'Dashboard',
-    description: "Welcome back! Here's what's happening today.",
+    title: 'Wireflow Dashboard',
+    description: "全域网络态势实时监控中。",
   },
 })
-import {
-  TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart,
-  CreditCard, ArrowUpRight, ArrowDownRight, MoreHorizontal,
-} from 'lucide-vue-next'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-// ── Stats ────────────────────────────────────────────────────────────────────
+import {
+  Activity, Server, ShieldCheck, AlertTriangle,
+  ArrowUpRight, ArrowDownRight, Globe, Zap, Terminal
+} from 'lucide-vue-next'
+
+// ── 1. 颜色映射表 (用于审计日志小圆点) ───────────────────────────────────
+const toneMap: Record<string, string> = {
+  emerald: 'bg-emerald-500',
+  blue: 'bg-blue-500',
+  amber: 'bg-amber-500',
+  red: 'bg-red-500',
+}
+
+// ── 2. 核心指标数据 ───────────────────────────────────────────────────────
 const stats = [
-  {
-    title: 'Total Revenue',
-    value: '$45,231.89',
-    change: '+20.1%',
-    trend: 'up' as const,
-    description: 'from last month',
-    icon: DollarSign,
-    sparkline: [30, 45, 35, 50, 40, 65, 60, 75, 55, 80, 70, 85],
-  },
-  {
-    title: 'Active Users',
-    value: '+2,350',
-    change: '+180.1%',
-    trend: 'up' as const,
-    description: 'from last month',
-    icon: Users,
-    sparkline: [20, 30, 25, 40, 35, 50, 45, 60, 55, 65, 60, 70],
-  },
-  {
-    title: 'New Orders',
-    value: '+12,234',
-    change: '+19%',
-    trend: 'up' as const,
-    description: 'from last month',
-    icon: ShoppingCart,
-    sparkline: [40, 35, 50, 45, 60, 55, 65, 60, 75, 70, 80, 85],
-  },
-  {
-    title: 'Conversion Rate',
-    value: '3.24%',
-    change: '-4.75%',
-    trend: 'down' as const,
-    description: 'since last month',
-    icon: CreditCard,
-    sparkline: [70, 65, 75, 60, 70, 55, 65, 50, 60, 45, 55, 40],
-  },
+  { title: '在线节点', value: '128 / 132', change: '+3', trend: 'up' as const, description: '过去 24h 新增', icon: Server, sparkline: [120, 122, 121, 125, 124, 128, 126, 128, 127, 128, 128, 128] },
+  { title: '总吞吐量', value: '4.2 Gbps', change: '+12.5%', trend: 'up' as const, description: '峰值带宽占用', icon: Activity, sparkline: [30, 45, 60, 40, 50, 75, 90, 85, 70, 95, 110, 100] },
+  { title: '活跃策略', value: '42', change: '0', trend: 'up' as const, description: '全域生效中', icon: ShieldCheck, sparkline: [42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42] },
+  { title: '系统告警', value: '3', change: '-2', trend: 'down' as const, description: '待处理风险', icon: AlertTriangle, sparkline: [8, 10, 5, 7, 3, 4, 6, 2, 4, 1, 3, 3] },
 ]
 
-// ── Chart helpers ────────────────────────────────────────────────────────────
+// ── 3. 绘图逻辑 (保持电商原版极简风格) ──────────────────────────────────
 function buildPath(data: number[], w: number, h: number, pad = 8) {
   const max = Math.max(...data)
   const min = Math.min(...data)
@@ -68,57 +44,33 @@ function buildPath(data: number[], w: number, h: number, pad = 8) {
   return { line, area, pts }
 }
 
-function sparkline(data: number[]) {
-  return buildPath(data, 80, 28, 2).line
-}
+const timeline = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']
+const upChart = computed(() => buildPath([1.2, 1.5, 2.8, 3.2, 2.1, 4.2, 3.8, 4.5, 5.2, 4.8, 4.2, 4.5], 520, 180, 16))
+const downChart = computed(() => buildPath([0.8, 1.1, 2.0, 2.5, 1.8, 3.0, 2.5, 3.2, 4.0, 3.5, 3.0, 3.2], 520, 180, 16))
 
-// ── Revenue area chart ───────────────────────────────────────────────────────
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const revenueValues = [18000, 22000, 19000, 28000, 24000, 32000, 30000, 35000, 29000, 38000, 36000, 45000]
-const prevRevenueValues = [12000, 16000, 14000, 20000, 18000, 25000, 22000, 28000, 24000, 30000, 28000, 35000]
-
-const revenueChart = computed(() => buildPath(revenueValues, 520, 180, 16))
-const prevRevenueChart = computed(() => buildPath(prevRevenueValues, 520, 180, 16))
-
-// ── Bar chart (orders by day) ────────────────────────────────────────────────
-const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const ordersData = [120, 180, 150, 220, 195, 260, 240]
-const ordersMax = Math.max(...ordersData)
-
-// ── Transactions ─────────────────────────────────────────────────────────────
-const transactions = [
-  { id: '#3210', name: 'Olivia Martin', email: 'olivia.martin@email.com', type: 'Sale', status: 'Approved', date: 'Jan 8, 2024', amount: '+$1,999.00', initials: 'OM', pos: true },
-  { id: '#3209', name: 'Jackson Lee', email: 'jackson.lee@email.com', type: 'Refund', status: 'Declined', date: 'Jan 7, 2024', amount: '-$39.00', initials: 'JL', pos: false },
-  { id: '#3208', name: 'Isabella Nguyen', email: 'isabella.nguyen@email.com', type: 'Sale', status: 'Approved', date: 'Jan 7, 2024', amount: '+$299.00', initials: 'IN', pos: true },
-  { id: '#3207', name: 'William Kim', email: 'will@email.com', type: 'Sale', status: 'Approved', date: 'Jan 6, 2024', amount: '+$99.00', initials: 'WK', pos: true },
-  { id: '#3206', name: 'Sofia Davis', email: 'sofia.davis@email.com', type: 'Sale', status: 'Pending', date: 'Jan 6, 2024', amount: '+$39.00', initials: 'SD', pos: true },
+const topNodes = [
+  { name: 'AWS-Virginia-Edge', ip: '54.12.8.11', traffic: '1.2 TB', load: 82, status: 'Healthy' },
+  { name: 'HK-CN2-GIA', ip: '43.22.10.5', traffic: '942 GB', load: 65, status: 'Healthy' },
+  { name: 'Linode-Tokyo', ip: '139.16.2.88', traffic: '850 GB', load: 42, status: 'Warning' },
+  { name: 'DigitalOcean-SG', ip: '159.2.4.1', traffic: '720 GB', load: 30, status: 'Healthy' },
+  { name: 'Hetzner-Frankfurt', ip: '95.1.5.12', traffic: '610 GB', load: 15, status: 'Healthy' },
 ]
 
-const statusStyle: Record<string, string> = {
-  Approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  Declined: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-}
-
-// ── Top Products ──────────────────────────────────────────────────────────────
-const products = [
-  { name: 'Glimmer Lamps', sales: 1204, revenue: '$29,890', growth: '+12.5%', trend: 'up' as const },
-  { name: 'Aqua Filters', sales: 967, revenue: '$18,420', growth: '+8.2%', trend: 'up' as const },
-  { name: 'Eco Planters', sales: 842, revenue: '$15,670', growth: '-3.4%', trend: 'down' as const },
-  { name: 'Solar Torches', sales: 738, revenue: '$12,800', growth: '+5.1%', trend: 'up' as const },
-  { name: 'Spark Plugs', sales: 621, revenue: '$9,340', growth: '-1.2%', trend: 'down' as const },
+const auditLogs = [
+  { time: '10:24', user: 'Admin', action: 'Update Policy', target: 'Global-ACL', tone: 'emerald' },
+  { time: '10:15', user: 'System', action: 'Node Join', target: 'edge-node-99', tone: 'blue' },
+  { time: '09:12', user: 'Security', action: 'Block IP', target: '192.168.1.100', tone: 'red' },
 ]
 </script>
 
 <template>
   <div class="flex flex-col gap-5 p-6">
 
-    <!-- ── Stats Cards ─────────────────────────────────────────────────── -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div
-        v-for="stat in stats"
-        :key="stat.title"
-        class="border-border bg-card rounded-xl border p-5"
+          v-for="stat in stats"
+          :key="stat.title"
+          class="border-border bg-card text-card-foreground rounded-xl border p-5 shadow-sm"
       >
         <div class="flex items-start justify-between">
           <div class="flex flex-col gap-1">
@@ -129,249 +81,118 @@ const products = [
             <component :is="stat.icon" class="text-muted-foreground size-4" />
           </div>
         </div>
-
-        <div class="mt-3 flex items-center justify-between">
-          <div class="flex items-center gap-1 text-sm">
-            <component
-              :is="stat.trend === 'up' ? ArrowUpRight : ArrowDownRight"
-              :class="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'"
-              class="size-4"
-            />
-            <span :class="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'" class="font-semibold">
-              {{ stat.change }}
-            </span>
-            <span class="text-muted-foreground">{{ stat.description }}</span>
-          </div>
+        <div class="mt-3 flex items-center gap-1 text-sm">
+          <component :is="stat.trend === 'up' ? ArrowUpRight : ArrowDownRight"
+                     :class="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'" class="size-4" />
+          <span :class="stat.trend === 'up' ? 'text-emerald-600' : 'text-red-500'" class="font-semibold">{{ stat.change }}</span>
+          <span class="text-muted-foreground">{{ stat.description }}</span>
         </div>
-
-        <!-- Sparkline -->
         <svg class="mt-3 w-full" viewBox="0 0 80 28" preserveAspectRatio="none" style="height:28px">
-          <path
-            :d="sparkline(stat.sparkline)"
-            fill="none"
-            :stroke="stat.trend === 'up' ? '#10b981' : '#ef4444'"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <path :d="buildPath(stat.sparkline, 80, 28, 2).line" fill="none"
+                :stroke="stat.trend === 'up' ? '#10b981' : '#ef4444'" stroke-width="1.5" stroke-linecap="round" />
         </svg>
       </div>
     </div>
 
-    <!-- ── Charts Row ──────────────────────────────────────────────────── -->
     <div class="grid gap-4 lg:grid-cols-3">
-
-      <!-- Revenue Area Chart -->
-      <div class="border-border bg-card rounded-xl border p-5 lg:col-span-2">
+      <div class="border-border bg-card text-card-foreground rounded-xl border p-5 lg:col-span-2">
         <div class="mb-4 flex items-start justify-between">
           <div>
-            <h3 class="font-semibold">Revenue Overview</h3>
-            <p class="text-muted-foreground text-sm">Monthly revenue for 2024</p>
+            <h3 class="font-semibold">Network Throughput</h3>
+            <p class="text-muted-foreground text-sm">全域实时流量监控</p>
           </div>
-          <div class="flex items-center gap-4 text-xs">
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block size-2.5 rounded-full bg-primary"></span>
-              <span class="text-muted-foreground">This year</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block size-2.5 rounded-full bg-blue-300"></span>
-              <span class="text-muted-foreground">Last year</span>
-            </div>
+          <div class="flex items-center gap-4 text-xs font-medium">
+            <div class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-primary"></span> Inbound</div>
+            <div class="flex items-center gap-1.5"><span class="size-2.5 rounded-full bg-blue-400"></span> Outbound</div>
           </div>
         </div>
-
-        <svg viewBox="0 0 520 180" class="w-full" style="height:180px" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 520 180" class="w-full" style="height:180px">
           <defs>
-            <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="upGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3" />
               <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
             </linearGradient>
-            <linearGradient id="prevGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.25" />
-              <stop offset="100%" stop-color="#93c5fd" stop-opacity="0" />
-            </linearGradient>
           </defs>
-
-          <!-- Grid lines -->
-          <line v-for="i in 4" :key="i" :y1="i * 40" :y2="i * 40" x1="16" x2="504"
-            stroke="currentColor" stroke-opacity="0.08" stroke-width="1" />
-
-          <!-- Previous year area -->
-          <path :d="prevRevenueChart.area" fill="url(#prevGrad)" />
-          <path :d="prevRevenueChart.line" fill="none" stroke="#93c5fd" stroke-width="1.5"
-            stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4 3" />
-
-          <!-- Current year area -->
-          <path :d="revenueChart.area" fill="url(#revGrad)" />
-          <path :d="revenueChart.line" fill="none" stroke="var(--primary)" stroke-width="2"
-            stroke-linejoin="round" stroke-linecap="round" />
-
-          <!-- Dots on current year -->
-          <circle
-            v-for="(pt, i) in revenueChart.pts"
-            :key="i"
-            :cx="pt.x"
-            :cy="pt.y"
-            r="3"
-            fill="var(--primary)"
-            class="opacity-0 transition-opacity hover:opacity-100"
-          />
+          <line v-for="i in 4" :key="i" :y1="i * 40" :y2="i * 40" x1="16" x2="504" stroke="currentColor" stroke-opacity="0.08" />
+          <path :d="downChart.line" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 3" />
+          <path :d="upChart.area" fill="url(#upGrad)" />
+          <path :d="upChart.line" fill="none" stroke="var(--primary)" stroke-width="2" />
         </svg>
-
-        <!-- X labels -->
         <div class="mt-1 flex justify-between px-4 text-xs text-muted-foreground">
-          <span v-for="m in months" :key="m">{{ m }}</span>
+          <span v-for="t in timeline" :key="t">{{ t }}</span>
         </div>
       </div>
 
-      <!-- Orders Bar Chart -->
-      <div class="border-border bg-card rounded-xl border p-5">
+      <div class="border-border bg-card text-card-foreground rounded-xl border p-5">
         <div class="mb-4">
-          <h3 class="font-semibold">Orders This Week</h3>
-          <p class="text-muted-foreground text-sm">Daily order volume</p>
+          <h3 class="font-semibold">Node Load</h3>
+          <p class="text-muted-foreground text-sm">当前节点资源负载分布</p>
         </div>
-
         <div class="flex h-40 items-end gap-2">
-          <div
-            v-for="(val, i) in ordersData"
-            :key="days[i]"
-            class="flex flex-1 flex-col items-center gap-1"
-          >
-            <span class="text-muted-foreground text-[10px] font-medium">{{ val }}</span>
-            <div
-              class="bg-primary/80 hover:bg-primary w-full rounded-t transition-colors"
-              :style="{ height: `${(val / ordersMax) * 120}px` }"
-            />
+          <div v-for="node in topNodes" :key="node.name" class="flex flex-1 flex-col items-center gap-1">
+            <span class="text-muted-foreground text-[10px] font-medium">{{ node.load }}%</span>
+            <div class="bg-primary/80 hover:bg-primary w-full rounded-t transition-colors"
+                 :style="{ height: `${node.load}%` }" />
           </div>
         </div>
-
-        <div class="mt-2 flex justify-between text-xs text-muted-foreground">
-          <span v-for="d in days" :key="d">{{ d }}</span>
-        </div>
-
-        <div class="border-border mt-4 border-t pt-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-semibold">1,365</p>
-              <p class="text-muted-foreground text-xs">Total this week</p>
-            </div>
-            <div class="flex items-center gap-1 text-sm text-emerald-600">
-              <TrendingUp class="size-4" />
-              <span class="font-semibold">+12.5%</span>
-            </div>
+        <div class="mt-4 border-t border-border pt-4 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-primary font-semibold text-sm">
+            <Zap class="size-4" /> 加速引擎活动中
           </div>
+          <span class="text-xs text-muted-foreground italic">Optimal</span>
         </div>
       </div>
     </div>
 
-    <!-- ── Bottom Row ──────────────────────────────────────────────────── -->
     <div class="grid gap-4 lg:grid-cols-3">
-
-      <!-- Recent Transactions -->
-      <div class="border-border bg-card rounded-xl border lg:col-span-2">
-        <div class="flex items-center justify-between border-b border-border p-5">
-          <div>
-            <h3 class="font-semibold">Recent Transactions</h3>
-            <p class="text-muted-foreground text-sm">5 transactions this week</p>
-          </div>
-          <button class="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors">
-            <MoreHorizontal class="size-4" />
-          </button>
+      <div class="border-border bg-card text-card-foreground rounded-xl border lg:col-span-2 overflow-hidden">
+        <div class="border-b border-border p-5 flex justify-between items-center">
+          <h3 class="font-semibold text-sm">High-Traffic Nodes</h3>
+          <button class="text-muted-foreground hover:text-foreground"><MoreHorizontal class="size-4"/></button>
         </div>
-
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-border border-b">
-                <th class="text-muted-foreground px-5 py-3 text-left text-xs font-medium uppercase tracking-wider">Customer</th>
-                <th class="text-muted-foreground px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Type</th>
-                <th class="text-muted-foreground px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                <th class="text-muted-foreground px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-                <th class="text-muted-foreground px-5 py-3 text-right text-xs font-medium uppercase tracking-wider">Amount</th>
-              </tr>
+            <tr class="border-b border-border bg-muted/30">
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Node</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">IP Address</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Traffic</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+            </tr>
             </thead>
-            <tbody>
-              <tr
-                v-for="tx in transactions"
-                :key="tx.id"
-                class="border-border hover:bg-muted/30 border-b transition-colors last:border-0"
-              >
-                <td class="px-5 py-3">
-                  <div class="flex items-center gap-3">
-                    <Avatar class="size-8">
-                      <AvatarFallback class="text-xs">{{ tx.initials }}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p class="font-medium">{{ tx.name }}</p>
-                      <p class="text-muted-foreground text-xs">{{ tx.email }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3 text-muted-foreground">{{ tx.type }}</td>
-                <td class="px-3 py-3">
-                  <span :class="statusStyle[tx.status]" class="rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    {{ tx.status }}
+            <tbody class="divide-y divide-border">
+            <tr v-for="node in topNodes" :key="node.name" class="hover:bg-muted/30 transition-colors">
+              <td class="px-5 py-3 font-medium">{{ node.name }}</td>
+              <td class="px-5 py-3 text-muted-foreground font-mono text-xs">{{ node.ip }}</td>
+              <td class="px-5 py-3 font-semibold">{{ node.traffic }}</td>
+              <td class="px-5 py-3 text-right">
+                  <span :class="node.status === 'Healthy' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : 'bg-amber-100 text-amber-700'"
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    {{ node.status }}
                   </span>
-                </td>
-                <td class="px-3 py-3 text-muted-foreground text-xs">{{ tx.date }}</td>
-                <td class="px-5 py-3 text-right font-medium" :class="tx.pos ? 'text-emerald-600' : 'text-red-500'">
-                  {{ tx.amount }}
-                </td>
-              </tr>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Top Products -->
-      <div class="border-border bg-card rounded-xl border p-5">
-        <div class="mb-4 flex items-center justify-between">
-          <div>
-            <h3 class="font-semibold">Top Products</h3>
-            <p class="text-muted-foreground text-sm">By revenue this month</p>
-          </div>
-          <button class="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors">
-            <MoreHorizontal class="size-4" />
-          </button>
-        </div>
-
-        <div class="flex flex-col gap-4">
-          <div
-            v-for="(product, i) in products"
-            :key="product.name"
-            class="flex items-center gap-3"
-          >
-            <div class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold">
-              {{ i + 1 }}
+      <div class="border-border bg-card text-card-foreground rounded-xl border p-5 overflow-hidden flex flex-col">
+        <h3 class="font-semibold mb-4">Audit Logs</h3>
+        <div class="space-y-4 flex-1">
+          <div v-for="(log, i) in auditLogs" :key="i" class="flex items-center gap-3">
+            <div :class="[toneMap[log.tone], 'size-2 rounded-full shadow-sm shrink-0']"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium truncate">{{ log.action }}</p>
+              <p class="text-[10px] text-muted-foreground">{{ log.time }} · {{ log.user }}</p>
             </div>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium">{{ product.name }}</p>
-              <p class="text-muted-foreground text-xs">{{ product.sales }} sales</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm font-semibold">{{ product.revenue }}</p>
-              <div class="flex items-center justify-end gap-0.5 text-xs"
-                :class="product.trend === 'up' ? 'text-emerald-600' : 'text-red-500'">
-                <component :is="product.trend === 'up' ? TrendingUp : TrendingDown" class="size-3" />
-                <span>{{ product.growth }}</span>
-              </div>
-            </div>
+            <div class="text-[10px] text-muted-foreground italic">{{ log.target }}</div>
           </div>
         </div>
-
-        <!-- Donut-style summary -->
-        <div class="border-border mt-4 border-t pt-4">
-          <div class="mb-2 flex justify-between text-xs text-muted-foreground">
-            <span>Total Revenue</span>
-            <span class="font-medium text-foreground">$86,120</span>
-          </div>
-          <div class="bg-muted h-2 overflow-hidden rounded-full">
-            <div class="h-full rounded-full bg-primary" style="width: 72%"></div>
-          </div>
-          <p class="mt-1 text-right text-xs text-muted-foreground">72% of monthly target</p>
-        </div>
+        <button class="mt-4 w-full py-2 border border-border rounded-md text-xs font-medium hover:bg-muted transition-colors">
+          View All Logs
+        </button>
       </div>
     </div>
-
   </div>
 </template>
