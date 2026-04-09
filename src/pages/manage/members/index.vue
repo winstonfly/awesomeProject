@@ -4,12 +4,20 @@ import { add, listUser, deleteUser } from '@/api/user'
 import { listWs } from '@/api/workspace'
 import { useTable, useAction } from '@/composables/useApi'
 import { useConfirm } from '@/composables/useConfirm'
-import { Users, Plus, RefreshCw, Settings, Trash2 } from 'lucide-vue-next'
+import {
+  Users, Plus, RefreshCw, Trash2, MoreHorizontal,
+  Pencil, Key, Clock, Server,
+} from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from '@/components/ui/sheet'
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 definePage({
   meta: { title: '用户管理', description: '管理平台成员与 RBAC 权限。' },
@@ -17,42 +25,35 @@ definePage({
 
 const { confirm } = useConfirm()
 
-// ── API 数据流 ────────────────────────────────────────────────────
+// ── API ───────────────────────────────────────────────────────────
 const { rows: members, total, loading, params, refresh } = useTable(listUser)
 const { rows: workspaces } = useTable(listWs)
 
 const { loading: addLoading, execute: runAdd } = useAction(add, {
   successMsg: '成员添加成功',
-  onSuccess: () => {
-    sheetOpen.value = false
-    refresh()
-  },
+  onSuccess: () => { dialogOpen.value = false; refresh() },
 })
 
-// ── 状态控制 ──────────────────────────────────────────────────────
-const sheetOpen = ref(false)
-const sheetType = ref<'invite' | 'config'>('invite')
+// ── 状态 ──────────────────────────────────────────────────────────
+const dialogOpen = ref(false)
+const dialogType = ref<'invite' | 'config'>('invite')
 const selectedMember = ref<any>(null)
 
 const form = ref({
-  email: '',
-  username: '',
-  password: '',
-  role: 'viewer',
-  namespace: '',
+  username: '', password: '', role: 'viewer', namespace: '',
   provider: 'local' as 'local' | 'dex',
 })
 
 function openInvite() {
-  sheetType.value = 'invite'
-  form.value = { email: '', username: '', password: '', role: 'viewer', namespace: '', provider: 'local' }
-  sheetOpen.value = true
+  dialogType.value = 'invite'
+  form.value = { username: '', password: '', role: 'viewer', namespace: '', provider: 'local' }
+  dialogOpen.value = true
 }
 
 function openConfig(m: any) {
   selectedMember.value = JSON.parse(JSON.stringify(m))
-  sheetType.value = 'config'
-  sheetOpen.value = true
+  dialogType.value = 'config'
+  dialogOpen.value = true
 }
 
 async function handleDelete(m: any) {
@@ -62,14 +63,7 @@ async function handleDelete(m: any) {
     type: 'danger',
     confirmText: '确认移除',
   })
-  if (ok) {
-    await deleteUser(m.id)
-    refresh()
-  }
-}
-
-async function handleSave() {
-  await runAdd(form.value)
+  if (ok) { await deleteUser(m.id); refresh() }
 }
 
 // ── 样式辅助 ──────────────────────────────────────────────────────
@@ -78,6 +72,10 @@ const roleStyle: Record<string, string> = {
   editor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20',
   viewer: 'bg-muted text-muted-foreground ring-1 ring-border',
 }
+const statusStyle: Record<string, string> = {
+  active:  'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20',
+  pending: 'bg-amber-400/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-400/20',
+}
 
 const avatarColors = [
   'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
@@ -85,18 +83,16 @@ const avatarColors = [
 ]
 function avatarColor(name: string) {
   let h = 0
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xff
+  for (const c of (name ?? '')) h = (h * 31 + c.charCodeAt(0)) & 0xff
   return avatarColors[h % avatarColors.length]
 }
 function firstChar(name: string) {
   return name?.trim().charAt(0).toUpperCase() ?? '?'
 }
-
-// 命名空间 badge 颜色（按名字哈希）
 function nsBadgeStyle(name: string) {
   const hues = [210, 160, 260, 40, 0, 190, 230]
   let h = 0
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xff
+  for (const c of (name ?? '')) h = (h * 31 + c.charCodeAt(0)) & 0xff
   const hue = hues[h % hues.length]
   return {
     backgroundColor: `hsla(${hue}, 70%, 50%, 0.12)`,
@@ -105,24 +101,17 @@ function nsBadgeStyle(name: string) {
   }
 }
 
-// 分页
 const totalPages = () => Math.ceil(total.value / params.pageSize)
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto p-4 lg:p-8 space-y-6">
+  <div class="p-6 space-y-5 animate-in fade-in duration-300">
 
-    <!-- ── Header ─────────────────────────────────────────────────── -->
-    <header class="flex items-center justify-between pb-6 border-b border-border">
-      <div class="flex items-center gap-4">
-        <div class="p-3 bg-primary rounded-2xl text-primary-foreground shadow-lg shadow-primary/20">
-          <Users class="size-6" />
-        </div>
-        <div>
-          <h1 class="text-2xl font-black tracking-tighter uppercase">用户管理</h1>
-          <p class="text-xs font-bold text-muted-foreground/50 uppercase tracking-widest">RBAC Control Plane</p>
-        </div>
-      </div>
+    <!-- ── Toolbar ────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between">
+      <p class="text-sm text-muted-foreground">
+        共 <span class="font-semibold text-foreground">{{ total }}</span> 位成员
+      </p>
       <div class="flex items-center gap-2">
         <Button variant="outline" size="sm" class="gap-1.5" :disabled="loading" @click="refresh">
           <RefreshCw class="size-3.5" :class="loading ? 'animate-spin' : ''" />
@@ -132,157 +121,160 @@ const totalPages = () => Math.ceil(total.value / params.pageSize)
           <Plus class="size-3.5" /> 添加成员
         </Button>
       </div>
-    </header>
+    </div>
 
-    <!-- ── Table ──────────────────────────────────────────────────── -->
-    <div class="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-border bg-muted/20">
-              <th class="text-left px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Identity</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 hidden md:table-cell">Namespace Bindings</th>
-              <th class="text-left px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">System Role</th>
-              <th class="text-right px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Actions</th>
-            </tr>
-          </thead>
+    <!-- ── Skeleton ───────────────────────────────────────────────── -->
+    <div v-if="loading && members.length === 0" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div v-for="i in 3" :key="i" class="h-52 rounded-xl bg-muted/50 animate-pulse" />
+    </div>
 
-          <tbody class="divide-y divide-border">
-            <!-- Empty state -->
-            <tr v-if="!loading && members.length === 0">
-              <td colspan="4" class="py-20 text-center">
-                <div class="flex flex-col items-center opacity-25">
-                  <Users class="size-10 mb-3" />
-                  <p class="text-sm font-black uppercase tracking-widest">No Members Found</p>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Loading skeleton -->
-            <tr v-else-if="loading && members.length === 0" v-for="i in 4" :key="i">
-              <td colspan="4" class="px-6 py-4">
-                <div class="h-4 bg-muted/50 rounded animate-pulse" />
-              </td>
-            </tr>
-
-            <!-- Member rows -->
-            <tr
-              v-else
-              v-for="m in members" :key="m.id"
-              class="hover:bg-muted/30 transition-colors group"
+    <!-- ── Member cards ───────────────────────────────────────────── -->
+    <div v-else-if="members.length > 0" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div
+        v-for="m in members" :key="m.id"
+        class="group bg-card border border-border rounded-xl flex flex-col overflow-hidden hover:shadow-md hover:border-primary/20 transition-all duration-200"
+      >
+        <!-- Card header -->
+        <div class="p-5 flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="size-10 rounded-xl flex items-center justify-center text-white text-sm font-black shrink-0 transition-transform group-hover:scale-105"
+              :class="avatarColor(m.name)"
             >
-              <!-- Identity -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="size-9 rounded-lg flex items-center justify-center text-white text-xs font-black shrink-0"
-                    :class="avatarColor(m.name)"
-                  >
-                    {{ firstChar(m.name) }}
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold leading-none">{{ m.name }}</p>
-                    <p class="text-[11px] font-mono text-muted-foreground/50 mt-0.5">{{ m.email }}</p>
-                  </div>
-                </div>
-              </td>
+              {{ firstChar(m.name) }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold truncate group-hover:text-primary transition-colors">{{ m.name }}</p>
+              <p class="text-[11px] font-mono text-muted-foreground/60 truncate">{{ m.email }}</p>
+            </div>
+          </div>
 
-              <!-- Namespace bindings -->
-              <td class="px-6 py-4 hidden md:table-cell">
-                <div class="flex flex-wrap gap-1.5">
-                  <span
-                    v-for="b in m.bindings" :key="b.ns"
-                    :style="nsBadgeStyle(b.ns)"
-                    class="px-2 py-0.5 rounded-md text-[10px] font-bold"
-                  >
-                    {{ b.ns }}
-                  </span>
-                  <span v-if="!m.bindings?.length" class="text-[11px] italic text-muted-foreground/30">Unassigned</span>
-                </div>
-              </td>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span
+              class="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+              :class="statusStyle[m.status] ?? statusStyle.pending"
+            >
+              <span
+                class="size-1.5 rounded-full"
+                :class="m.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'"
+              />
+              {{ m.status === 'active' ? '活跃' : '待激活' }}
+            </span>
 
-              <!-- Role -->
-              <td class="px-6 py-4">
-                <span
-                  class="px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-wider"
-                  :class="roleStyle[m.role] ?? roleStyle.viewer"
-                >
-                  {{ m.role ?? 'viewer' }}
-                </span>
-              </td>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="sm" class="size-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreHorizontal class="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" class="w-36">
+                <DropdownMenuItem @click="openConfig(m)">
+                  <Pencil class="size-3.5 mr-2" /> 编辑权限
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem class="text-destructive focus:text-destructive" @click="handleDelete(m)">
+                  <Trash2 class="size-3.5 mr-2" /> 移除
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
 
-              <!-- Actions -->
-              <td class="px-6 py-4">
-                <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost" size="sm"
-                    class="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10 gap-1"
-                    @click="openConfig(m)"
-                  >
-                    <Settings class="size-3.5" /> 授权
-                  </Button>
-                  <Button
-                    variant="ghost" size="sm"
-                    class="h-7 w-7 p-0 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10"
-                    @click="handleDelete(m)"
-                  >
-                    <Trash2 class="size-3.5" />
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Stats strip -->
+        <div class="flex items-center border-y border-border bg-muted/20 px-5 py-2.5 gap-4">
+          <div class="flex-1 text-center">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 mb-0.5">角色</p>
+            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md" :class="roleStyle[m.role] ?? roleStyle.viewer">
+              {{ m.role ?? 'viewer' }}
+            </span>
+          </div>
+          <div class="w-px h-6 bg-border" />
+          <div class="flex-1 text-center">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 mb-0.5">空间数</p>
+            <p class="text-sm font-black">{{ m.bindings?.length ?? 0 }}</p>
+          </div>
+          <div class="w-px h-6 bg-border" />
+          <div class="flex-1 text-center">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 mb-0.5">Provider</p>
+            <p class="text-[10px] font-black uppercase">{{ m.provider ?? 'local' }}</p>
+          </div>
+        </div>
 
-      <!-- Pagination -->
-      <div class="border-t border-border px-6 py-3 bg-muted/10 flex items-center justify-between">
-        <span class="text-xs text-muted-foreground/50">共 {{ total }} 位成员</span>
-        <div class="flex items-center gap-1">
+        <!-- Namespace bindings -->
+        <div class="px-5 py-4 flex-1">
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-2">Namespace Bindings</p>
+          <div class="flex flex-wrap gap-1.5 min-h-5">
+            <span
+              v-for="b in m.bindings" :key="b.ns"
+              :style="nsBadgeStyle(b.ns)"
+              class="px-2 py-0.5 rounded-md text-[10px] font-bold"
+            >
+              {{ b.ns }}
+            </span>
+            <span v-if="!m.bindings?.length" class="text-[11px] italic text-muted-foreground/30">Unassigned</span>
+          </div>
+        </div>
+
+        <!-- Card footer -->
+        <div class="px-5 py-3.5 border-t border-border bg-muted/10 flex items-center justify-between">
+          <p class="text-[11px] text-muted-foreground/50 flex items-center gap-1">
+            <Clock class="size-3" /> {{ m.lastActive ?? '从未登录' }}
+          </p>
           <Button
-            variant="outline" size="sm" class="h-7 text-xs px-2.5"
-            :disabled="params.page <= 1"
-            @click="params.page--"
+            size="sm"
+            class="h-7 text-xs gap-1 px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+            @click="openConfig(m)"
           >
-            上一页
-          </Button>
-          <span class="text-xs text-muted-foreground px-2">{{ params.page }} / {{ totalPages() || 1 }}</span>
-          <Button
-            variant="outline" size="sm" class="h-7 text-xs px-2.5"
-            :disabled="params.page >= totalPages()"
-            @click="params.page++"
-          >
-            下一页
+            编辑权限
           </Button>
         </div>
       </div>
     </div>
 
+    <!-- ── Empty state ────────────────────────────────────────────── -->
+    <div v-else class="flex flex-col items-center justify-center py-28 text-center">
+      <div class="size-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-4">
+        <Users class="size-7 text-muted-foreground/30" />
+      </div>
+      <p class="text-sm font-semibold text-muted-foreground">暂无团队成员</p>
+      <p class="text-xs text-muted-foreground/50 mt-1">点击添加按钮邀请第一位成员</p>
+      <Button size="sm" class="mt-4 gap-1.5" @click="openInvite">
+        <Plus class="size-3.5" /> 添加成员
+      </Button>
+    </div>
+
+    <!-- ── Pagination ─────────────────────────────────────────────── -->
+    <div v-if="total > params.pageSize" class="flex items-center justify-end gap-1">
+      <Button variant="outline" size="sm" class="h-7 text-xs px-2.5" :disabled="params.page <= 1" @click="params.page--">上一页</Button>
+      <span class="text-xs text-muted-foreground px-2">{{ params.page }} / {{ totalPages() || 1 }}</span>
+      <Button variant="outline" size="sm" class="h-7 text-xs px-2.5" :disabled="params.page >= totalPages()" @click="params.page++">下一页</Button>
+    </div>
+
   </div>
 
-  <!-- ── Sheet ──────────────────────────────────────────────────── -->
-  <Sheet v-model:open="sheetOpen">
-    <SheetContent class="w-[420px] sm:max-w-[420px] overflow-y-auto">
+  <!-- ── Dialog ─────────────────────────────────────────────────── -->
+  <Dialog v-model:open="dialogOpen">
+    <DialogContent class="sm:max-w-md">
 
       <!-- Invite -->
-      <template v-if="sheetType === 'invite'">
-        <SheetHeader>
-          <SheetTitle>添加成员</SheetTitle>
-          <SheetDescription>向平台添加新用户并分配初始权限</SheetDescription>
-        </SheetHeader>
+      <template v-if="dialogType === 'invite'">
+        <DialogHeader>
+          <DialogTitle>添加成员</DialogTitle>
+          <DialogDescription>向平台添加新用户并分配初始权限</DialogDescription>
+        </DialogHeader>
 
-        <div class="mt-6 space-y-5">
+        <div class="space-y-4 py-2">
           <!-- Provider toggle -->
-          <div class="flex bg-muted/50 rounded-xl p-1 border border-border">
+          <div class="flex bg-muted/50 rounded-lg p-1 border border-border">
             <button
-              class="flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all"
+              class="flex-1 py-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all"
               :class="form.provider === 'local' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground'"
               @click="form.provider = 'local'"
             >
               Local
             </button>
             <button
-              class="flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all"
+              class="flex-1 py-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all"
               :class="form.provider === 'dex' ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground'"
               @click="form.provider = 'dex'"
             >
@@ -291,29 +283,29 @@ const totalPages = () => Math.ceil(total.value / params.pageSize)
           </div>
 
           <div class="space-y-1.5">
-            <label class="text-xs font-medium text-foreground/70">用户名 / Email</label>
+            <label class="text-xs font-medium">用户名 / Email</label>
             <Input v-model="form.username" placeholder="ops@example.com" />
           </div>
 
           <div v-if="form.provider === 'local'" class="space-y-1.5">
-            <label class="text-xs font-medium text-foreground/70">初始密码</label>
+            <label class="text-xs font-medium">初始密码</label>
             <Input v-model="form.password" type="password" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1.5">
-              <label class="text-xs font-medium text-foreground/70">系统角色</label>
+              <label class="text-xs font-medium">系统角色</label>
               <select
                 v-model="form.role"
                 class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-[color,box-shadow]"
               >
-                <option value="admin">ADMIN</option>
-                <option value="editor">EDITOR</option>
-                <option value="viewer">VIEWER</option>
+                <option value="admin">Admin</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
               </select>
             </div>
             <div class="space-y-1.5">
-              <label class="text-xs font-medium text-foreground/70">初始空间</label>
+              <label class="text-xs font-medium">初始空间</label>
               <select
                 v-model="form.namespace"
                 class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-[color,box-shadow]"
@@ -323,78 +315,82 @@ const totalPages = () => Math.ceil(total.value / params.pageSize)
               </select>
             </div>
           </div>
-
-          <div class="flex gap-2 pt-2">
-            <Button variant="outline" class="flex-1" @click="sheetOpen = false">取消</Button>
-            <Button class="flex-1" :disabled="addLoading" @click="handleSave">
-              <RefreshCw v-if="addLoading" class="size-3.5 animate-spin mr-2" />
-              Provision Identity
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="dialogOpen = false">取消</Button>
+          <Button :disabled="addLoading" @click="runAdd(form)">
+            <RefreshCw v-if="addLoading" class="size-3.5 animate-spin mr-2" />
+            添加成员
+          </Button>
+        </DialogFooter>
       </template>
 
       <!-- Config -->
       <template v-else-if="selectedMember">
-        <SheetHeader>
-          <SheetTitle>RBAC 配置</SheetTitle>
-          <SheetDescription>管理成员的命名空间绑定与权限</SheetDescription>
-        </SheetHeader>
+        <DialogHeader>
+          <DialogTitle>编辑权限</DialogTitle>
+          <DialogDescription>管理 {{ selectedMember.name }} 的命名空间绑定与角色</DialogDescription>
+        </DialogHeader>
 
-        <div class="mt-6 space-y-5">
-          <!-- Member card -->
-          <div class="flex items-center gap-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
-            <div
-              class="size-12 rounded-xl flex items-center justify-center text-white text-base font-black shrink-0"
-              :class="avatarColor(selectedMember.name)"
-            >
+        <div class="space-y-4 py-2">
+          <!-- Member info -->
+          <div class="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+            <div class="size-10 rounded-xl flex items-center justify-center text-white text-sm font-black shrink-0" :class="avatarColor(selectedMember.name)">
               {{ firstChar(selectedMember.name) }}
             </div>
             <div>
-              <p class="font-black text-sm">{{ selectedMember.name }}</p>
+              <p class="text-sm font-bold">{{ selectedMember.name }}</p>
               <p class="text-xs font-mono text-muted-foreground/60">{{ selectedMember.email }}</p>
             </div>
           </div>
 
-          <!-- Binding list -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Namespace Bindings</p>
+          <!-- Role -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-medium">系统角色</label>
+            <select
+              v-model="selectedMember.role"
+              class="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-[color,box-shadow]"
+            >
+              <option value="admin">Admin</option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+
+          <!-- Bindings -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-medium">Namespace Bindings</label>
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2 max-h-44 overflow-y-auto">
               <div
                 v-for="(b, i) in selectedMember.bindings" :key="i"
-                class="p-3 rounded-xl border border-border bg-muted/20"
+                class="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20"
               >
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold uppercase italic">{{ b.ns }}</span>
+                <div class="flex items-center gap-2">
+                  <Server class="size-3.5 text-muted-foreground/50" />
+                  <span class="text-xs font-bold">{{ b.ns }}</span>
                 </div>
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                  <div>
-                    <p class="text-[10px] font-black text-muted-foreground/40 uppercase mb-1">RBAC Role</p>
-                    <select class="w-full h-7 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none">
-                      <option>Admin</option>
-                      <option>Editor</option>
-                      <option>Viewer</option>
-                    </select>
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-black text-muted-foreground/40 uppercase mb-1">Quota</p>
-                    <p class="text-xs font-mono text-muted-foreground/60 mt-1.5">{{ b.quota || 'Standard' }}</p>
-                  </div>
-                </div>
+                <select class="h-7 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none w-28">
+                  <option>Admin</option>
+                  <option>Editor</option>
+                  <option>Viewer</option>
+                </select>
               </div>
-              <p v-if="!selectedMember.bindings?.length" class="text-xs text-muted-foreground/40 italic py-2">暂无命名空间绑定</p>
+              <p v-if="!selectedMember.bindings?.length" class="text-xs text-muted-foreground/40 italic py-1 text-center">暂无命名空间绑定</p>
             </div>
           </div>
-
-          <div class="flex gap-2 pt-2">
-            <Button variant="outline" class="flex-1" @click="sheetOpen = false">取消</Button>
-            <Button class="flex-1" @click="sheetOpen = false">Sync RBAC</Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="dialogOpen = false">取消</Button>
+          <Button @click="dialogOpen = false">
+            <Key class="size-3.5 mr-2" /> 保存权限
+          </Button>
+        </DialogFooter>
       </template>
 
-    </SheetContent>
-  </Sheet>
+    </DialogContent>
+  </Dialog>
 </template>

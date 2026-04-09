@@ -1,38 +1,11 @@
 <script setup lang="ts">
-import type { SidebarProps } from "@/components/ui/sidebar"
+import type {SidebarProps} from "@/components/ui/sidebar"
+import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail,} from "@/components/ui/sidebar"
 
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  LayoutDashboard,
-  Map,
-  PieChart,
-  Settings2,
-  ShoppingCart,
-  SquareTerminal,
-  Server,
-  KeyRound,
-  Layers,
-  Activity,
-  Users,
-  GitFork,
-} from "lucide-vue-next"
+import {AudioWaveform, Command, GalleryVerticalEnd, LayoutDashboard, Server, Settings2, Zap,} from "lucide-vue-next"
 import NavMain from "@/components/app-sidebar/NavMain.vue"
-import NavProjects from "@/components/app-sidebar/NavProjects.vue"
 import NavUser from "@/components/app-sidebar/NavUser.vue"
 import TeamSwitcher from "@/components/app-sidebar/TeamSwitcher.vue"
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "icon",
@@ -64,8 +37,9 @@ const data = {
   ],
   navMain: [
     {
-      title: "Steps",
+      title: "Quickstart",
       url: "/manage/stepper",
+      icon: Zap,
       items: [],
     },
     {
@@ -81,8 +55,8 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Users",
-          url: "/manage/users",
+          title: "Memberes",
+          url: "/manage/members",
         },
         {
           title: "topology",
@@ -95,6 +69,10 @@ const data = {
         {
           title: "Workspaces",
           url: "/manage/workspaces",
+        },
+        {
+          title: "Policies",
+          url: "/manage/policies",
         },
         {
           title: "Peering",
@@ -132,16 +110,16 @@ const data = {
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
+      <TeamSwitcher :teams="data.teams"/>
     </SidebarHeader>
     <SidebarContent>
-      <NavMain :items="data.navMain" />
-<!--      <NavMain label="网络管理" :items="data.navNetwork" />-->
-<!--      <NavProjects :projects="data.projects" />-->
+      <NavMain :items="data.navMain"/>
+      <!--      <NavMain label="网络管理" :items="data.navNetwork" />-->
+      <!--      <NavProjects :projects="data.projects" />-->
     </SidebarContent>
     <SidebarFooter>
-      <NavUser :user="data.user" />
+      <NavUser :user="data.user"/>
     </SidebarFooter>
-    <SidebarRail />
+    <SidebarRail/>
   </Sidebar>
 </template>

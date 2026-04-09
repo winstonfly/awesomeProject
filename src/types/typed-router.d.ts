@@ -55,6 +55,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/login/': RouteRecordInfo<
+      '/login/',
+      '/login',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/manage/members/': RouteRecordInfo<
       '/manage/members/',
       '/manage/members',
@@ -114,6 +121,13 @@ declare module 'vue-router/auto-routes' {
     '/manage/workspaces/': RouteRecordInfo<
       '/manage/workspaces/',
       '/manage/workspaces',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/signup/': RouteRecordInfo<
+      '/signup/',
+      '/signup',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -183,6 +197,12 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
+    'src/pages/login/index.vue': {
+      routes:
+        | '/login/'
+      views:
+        | never
+    }
     'src/pages/manage/members/index.vue': {
       routes:
         | '/manage/members/'
@@ -234,6 +254,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/manage/workspaces/index.vue': {
       routes:
         | '/manage/workspaces/'
+      views:
+        | never
+    }
+    'src/pages/signup/index.vue': {
+      routes:
+        | '/signup/'
       views:
         | never
     }
